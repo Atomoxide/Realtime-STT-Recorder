@@ -6,13 +6,14 @@ import numpy as np
 import time
 import asyncio
 import os
+import glob
 from stt_api import upload_file_async
 
 THRESHOLD = 1.0
 FS = 44100
 CHAN = 1
-STOP_DELAY = 2.0
-GAIN_FACTOR = 1.5
+STOP_DELAY = 1.0
+GAIN_FACTOR = 2.0
 URL = "http://127.0.0.1:9977/api"
 
 class Record():
@@ -74,6 +75,12 @@ if __name__ == "__main__":
             record.loop.run_until_complete(asyncio.sleep(0))
             record.loop.stop()
             record.loop.close()
+            files_to_delete = glob.glob('./outputs/recording_*')
+            for file in files_to_delete:
+                try:
+                    os.remove(file)
+                except:
+                    pass
 
 
 
