@@ -6,7 +6,7 @@ import numpy as np
 import time
 import asyncio
 import os
-from api_post import upload_file_async
+from stt_api import upload_file_async
 
 THRESHOLD = 1.0
 FS = 44100
@@ -20,9 +20,10 @@ class Record():
     def __init__(self):
         self.is_recording = False
         self.recoding_sequence = list()
-        self.recording_count = 0
         self.stop_timer = None
         self.amplified_data = list()
+        self.loop = asyncio.get_event_loop()
+        
 
     def audio_callback(self, indata, frames, callback_time, status):
         volume_norm = np.linalg.norm(indata)*10
@@ -53,9 +54,7 @@ class Record():
                     wavfile.write(wav_filename, FS, np.concatenate(self.amplified_data, axis=0))
                     print(f"Saved {wav_filename}")
                     self.recoding_sequence = list()
-                    self.recording_count += 1
-                    response, file_path = asyncio.run(upload_file_async(wav_filename))
-                    os.remove(file_path)
+                    asyncio.run_coroutine_threadsafe(upload_file_async(wav_filename), self.loop)
                             
         if self.is_recording:
             self.recoding_sequence.append(indata.copy())
@@ -67,9 +66,14 @@ if __name__ == "__main__":
     with sd.InputStream(callback=record.audio_callback, channels=CHAN, samplerate=FS):
         try:
             while True:
-                pass
+                # time.sleep(1)
+                record.loop.run_forever()
+                # pass
         except KeyboardInterrupt:
             print("\nRecording finished.")
+            record.loop.run_until_complete(asyncio.sleep(0))
+            record.loop.stop()
+            record.loop.close()
 
 
 

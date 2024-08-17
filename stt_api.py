@@ -3,11 +3,12 @@ import asyncio
 import os
 
 async def upload_file_async(file_path):
-    url = "http://127.0.0.1:9977/api"
+    stt_url = "http://127.0.0.1:9977/api"
+    namazu_url = "http://127.0.0.1:2019/command"
     
     # Prepare the file and data for the request
     # file_path = './outputs/test.wav'
-    data = {"language": "zh", "model": "base", "response_format": "json"}
+    data = {"language": "zh", "model": "small", "response_format": "json"}
 
     async with aiohttp.ClientSession() as session:
         with open(file_path, 'rb') as file:
@@ -19,12 +20,19 @@ async def upload_file_async(file_path):
             
             # os.remove(file_path)
             # Perform the POST request asynchronously
-            async with session.post(url, data=form_data, timeout=aiohttp.ClientTimeout(total=600)) as response:
+            print("invoking")
+            async with session.post(stt_url, data=form_data, timeout=aiohttp.ClientTimeout(total=600)) as response:
                 # Handle the response
                 if response.status == 200:
                     result = await response.json()
-                    print("Upload successful:", result)
-                    return result, file_path
+                    # print("Upload successful.")
+                    text = result.get("data")[0].get("text")
+                    command = f"/e {text}"
+                    print(command)
+                    async with session.post(namazu_url, data=command, timeout=aiohttp.ClientTimeout(total=600)) as namazu_response:
+                        if namazu_response.status != 200:
+                            print(f"Failed to post to Namazu. Status code: {response.status}")
                 else:
                     print(f"Failed to upload. Status code: {response.status}")
-                    return None, file_path
+                    
+                os.remove(file_path)
