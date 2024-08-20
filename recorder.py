@@ -9,10 +9,10 @@ import os
 import glob
 from stt_api import upload_file_async
 
-THRESHOLD = 1.0
+THRESHOLD = 2.0
 FS = 44100
 CHAN = 1
-STOP_DELAY = 1.0
+STOP_DELAY = 2.0
 GAIN_FACTOR = 2.0
 URL = "http://127.0.0.1:9977/api"
 
