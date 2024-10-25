@@ -29,7 +29,7 @@ async def upload_file_async(file_path):
                         # print("Upload successful.")
                         # text = result.get("data")[0].get("text")
                         text = result.get("data")
-                        if text != "请转录为中文简体。" and text:
+                        if text != "请转录为中文简体 " and text:
                             command = f"/p {text}"
                             print(command)
                             async with session.post(namazu_url, data=command, timeout=aiohttp.ClientTimeout(total=10)) as namazu_response:
